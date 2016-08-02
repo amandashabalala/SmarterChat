@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>mg-login demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <style>
+        body {
+            background: #fafafa;
+            font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .content-offset {
+            margin: 50px;
+        }
+
+        #logoutButton {
+                background: var(--accent-color);
+                color: var(--text-primary-color);
+                margin-top: 16px;
+                @apply(--paper-font-button);
+            }
+    </style>
+    <link rel="import" href="../../font-roboto/roboto.html">
+    <link rel="import" href="../mg-login.html">
+    <link rel="import" href="app-theme.html">
+</head>
+<body unresolved>
+    <template is="dom-bind" id="app">
+        <div class="content-offset">
+            <p>
+                Example:
+                <br />
+                <code>
+                    &lt;mg-login url="<span>{{loginUrl}}</span>" elevation="2"<br />
+                    title-label="LOG IN"<br />
+                    login-name-label="login name"<br />
+                    password-label="password"<br />
+                    submit-button-label="Submit"<br />
+                    busy-label="Logging you in, please wait..."<br />
+                    &gt;
+                    <br />
+                    &lt;/mg-login&gt;
+                </code>
+                <br/><br />
+                You only need to set the *-label attributes if you want to set the value to something other than the defaults (the example uses the defaults) or localize the values.
+            </p>
+            <paper-input id="urlInput" label="Login Web Method Url" type="text" value="{{loginUrl}}"></paper-input>
+            <br />
+            <mg-login url="{{loginUrl}}" elevation="2"
+                      title-label="LOG IN"
+                      login-name-label="login name"
+                      password-label="password"
+                      submit-button-label="Submit"
+                      busy-label="Logging you in, please wait...">
+            </mg-login>
+
+            <p>
+                Response:
+                <br/>
+                <code>{{response}}</code>
+                <br/><br/>
+                Token:
+                <br/>
+                <code>{{token}}</code>
+                <br/>
+            </p>
+
+            <iron-ajax id="logoutAjax"
+                       url="{{logoutUrl}}"
+                       method="POST"
+                       content-type="application/json"
+                       handle-as="json"
+                        debounce-duration="300">
+            </iron-ajax>
+
+            <paper-button id="logoutButton" raised on-click="_onLogoutButtonClick">Log Out</paper-button>
+        </div>
+    </template>
+    <script>
+        (function (document) {
+
+            var app = document.querySelector('#app');
+            app.loginUrl = "http://southseasgaming.microgaming.com/Framework/api/Security/Login";
+            app.logoutUrl = "http://southseasgaming.microgaming.com/Framework/api/Security/IsSessionTokenValid";
+            app.response = "";
+
+            app._onLogoutButtonClick = function () {
+                var ajax = document.getElementById('logoutAjax');
+                ajax.body = JSON.stringify(app.token);
+
+                ajax.headers = {
+                    authorization: "UserSession " + app.token
+                }
+                ajax.generateRequest();
+            };
+
+            document.addEventListener('mg-login-success', function (e) {
+                console.log("LOGIN SUCCEEDED");
+                console.log(e.detail.result);
+                app.response = JSON.stringify(e.detail.result);
+                app.token = e.detail.result.sessionToken;
+            });
+
+            document.addEventListener('mg-login-fail', function (e) {
+                console.log("LOGIN FAILED");
+                console.log(e.detail.result);
+                app.response = JSON.stringify(e.detail.result);
+                app.token = null;
+            });
+
+            window.addEventListener("WebComponentsReady", function () {
+
+            });
+        })(document);
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+﻿<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<script src="../bower_components/firebase/firebase.js"></script>
+<link rel="import" href="../bower_components/firebase-element/firebase.html">
+<link rel="import" href="../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="../mg_components/mg-login/mg-login.html">
+<link rel="import" href="../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/paper-styles/typography.html">
+<link rel="import" href="../bower_components/paper-styles/default-theme.html">
+<link rel="import" href="../bower_components/paper-styles/demo-pages.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="my-icons.html">
+<link rel="import" href="sc-online-players.html">
+<link rel="import" href="sc-player-emulator.html">
+
+<dom-module id="sc-login">
+    <template>
+        <style>
+            :host {
+                display: block;
+                --app-primary-color: #4285f4;
+                --app-secondary-color: black;
+                --accent-color: #CDDC39;
+                --default-primary-color:#4285f4;
+            }
+
+            .loginStyle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .EmulatorStyle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top:10px;
+            }
+        </style>
+
+        <div id="logonBox" class="loginStyle">
+            <mg-login url="http://southseasgaming.microgaming.com/Framework/api/Security/Login"></mg-login>
+        </div>
+
+        <!--<app-localstorage-document key="loggedinuser" data="{{loggedinuser}}">
+        </app-localstorage-document>-->
+
+    </template>
+    <script>
+
+        Polymer({
+
+            is: 'sc-login',
+            properties: {
+                loginMode: {
+                    type: String,
+                    value: 'show'
+                },
+                operatorMode: {
+                    type: String,
+                    value: 'hide'
+                },
+                isLoggedIn: {
+                    type: Boolean,
+                    value: false,
+                    notify: true
+                },
+                loggedinuser: {
+                    type: Object,
+                    notify:true
+                }
+            }
+        });
+        (function (document) {
+
+            var app = document.querySelector('#sc-login');
+            //app.loginUrl = "http://southseasgaming.microgaming.com/Framework/api/Security/Login";
+            //app.logoutUrl = "http://southseasgaming.microgaming.com/Framework/api/Security/IsSessionTokenValid";
+            //app.response = "";
+
+            document.addEventListener('mg-login-success', function (e) {
+                console.log("LOGIN SUCCEEDED");
+                console.log(e.detail.result);
+                this.response = JSON.stringify(e.detail.result);
+                this.token = e.detail.result.sessionToken;
+                this.loggedinuser = this.response;
+                this.isLoggedIn = true;
+
+                var normalizedEvent = Polymer.dom(event);
+               
+                //??Is this hacky? - without this, my 2-way binding to parent loggedinuser property doesn't work
+                var scapp =  normalizedEvent.localTarget;
+                scapp.loggedinuser = this.response;
+               
+            });
+
+            document.addEventListener('mg-login-fail', function (e) {
+                console.log("LOGIN FAILED");
+                console.log(e.detail.result);
+                app.response = JSON.stringify(e.detail.result);
+                app.token = null;
+            });
+
+            window.addEventListener("WebComponentsReady", function () {
+
+            });
+        })(document);
+
+    </script>
+</dom-module>

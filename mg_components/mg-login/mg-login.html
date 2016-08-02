@@ -1,0 +1,398 @@
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/gold-email-input/gold-email-input.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/slide-down-animation.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<!--
+`mg-login` is used to authenticate with Caiman, allowing you to interact with other Caiman APIs via a Caiman access token.
+
+Example:
+
+    <mg-login url="http://southseasgaming.microgaming.com/Framework/api/Security/Login">
+    </mg-login>
+
+@group Mg Elements
+@element mg-login
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="mg-login">
+    <template>
+        <style>
+            :host {
+                display: block;
+                --mg-login-border-radius: 2px;
+                --accent-color: #CDDC39;
+                --default-primary-color:#4285f4;
+            }
+
+            .hidden-item {
+                display: none;
+            }
+
+            #cardLoginContainer {
+                width: 350px;
+                height: 350px;
+                -ms-border-radius: var(--mg-login-border-radius);
+                border-radius: var(--mg-login-border-radius);
+                background: var(--primary-background-color);
+            }
+
+            #cardLoginHeader {
+                height: 100px;
+                padding: 16px;
+                -ms-border-top-left-radius: var(--mg-login-border-radius);
+                border-top-left-radius: var(--mg-login-border-radius);
+                -ms-border-top-right-radius: var(--mg-login-border-radius);
+                border-top-right-radius: var(--mg-login-border-radius);
+                background-color: var(--default-primary-color);
+                text-align: left;
+                color: var(--text-primary-color);
+                @apply(--paper-font-display1);
+            }
+
+            #cardLoginForm {
+                text-align: left;
+                margin: 16px;
+                margin-bottom: 16px;
+            }
+
+            #cardLoginErrorBar {
+                position: absolute;
+                color: var(--text-primary-color);
+                @apply(--paper-font-body2);
+            }
+
+            #cardBusyForm {
+                text-align: center;
+                margin-top: 16px;
+                margin-bottom: 16px;
+            }
+
+            #submitButton {
+                background: var(--accent-color);
+                color: var(--text-primary-color);
+                margin-top: 16px;
+                float: right;
+                @apply(--paper-font-button);
+            }
+
+                #submitButton[disabled] {
+                    background: var(--disabled-text-color);
+                }
+
+            paper-spinner {
+                margin-top: 16px;
+                --paper-spinner-layer-1-color: var(--default-primary-color);
+                --paper-spinner-layer-2-color: var(--default-primary-color);
+                --paper-spinner-layer-3-color: var(--default-primary-color);
+                --paper-spinner-layer-4-color: var(--default-primary-color);
+            }
+
+            .busy-text {
+                margin-top: 32px;
+                color: var(--default-primary-color);
+                @apply(--paper-font-body2);
+            }
+
+            .big {
+                --iron-icon-height: 40px;
+                --iron-icon-width: 40px;
+            }
+
+            @media screen and (max-width: 400px), screen and (max-height: 400px) {
+                :host {
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                #cardLoginContainer {
+                    width: 100%;
+                    height: 100%;
+                    -ms-border-radius: 0;
+                    border-radius: 0;
+                }
+
+
+                #cardLoginHeader {
+                    -ms-border-top-left-radius: 0;
+                    border-top-left-radius: 0;
+                    -ms-border-top-right-radius: 0;
+                    border-top-right-radius: 0;
+                    text-align: center;
+                }
+            }
+
+            @media screen and (max-height: 400px) {
+                #cardLoginHeader {
+                    height: 80px;
+                }
+            }
+        </style>
+        <iron-ajax id="loginAjax"
+                   url="{{url}}"
+                   method="POST"
+                   content-type="application/json"
+                   handle-as="json"
+                   debounce-duration="300"
+                   on-response="_handleResponse"
+                   on-error="_handleError">
+        </iron-ajax>
+        <iron-a11y-keys target="[[_target]]" keys="enter" on-keys-pressed="_onSubmitButtonClick"></iron-a11y-keys>
+        <paper-material id="cardLoginContainer" elevation="{{elevation}}">
+            <div id="cardLoginHeader">
+                <iron-icon class="big"  src="../../images/chaticon2.png"></iron-icon>
+                [[titleLabel]]
+                <p id="cardLoginErrorBar" hidden="{{!hasError}}">{{lastError}}</p>
+            </div>
+            <div id="cardLoginForm" hidden="{{busy}}">
+                <gold-email-input id="loginBox" label="[[loginNameLabel]]" auto-validate value="{{loginName}}"></gold-email-input>
+                <paper-input id="passwordBox" label="[[passwordLabel]]" type="password"></paper-input>
+                <paper-button id="submitButton" raised autofocus focused on-click="_onSubmitButtonClick">[[submitButtonLabel]]</paper-button>
+            </div>
+            <div id="cardBusyForm" hidden$="{{!busy}}">
+                <paper-spinner active></paper-spinner>
+                <h3 class="busy-text">[[busyLabel]]</h3>
+            </div>
+        </paper-material>
+    </template>
+    <script>
+        'use strict';
+        Polymer({
+
+            is: 'mg-login',
+
+            behaviors: [Polymer.NeonAnimationRunnerBehavior],
+
+            properties: {
+                /**
+                 * The configuration object for the card animations.
+                 * @private
+                 */
+                animationConfig: {
+                    value: function () {
+                        return {
+                            "showError": [
+                                {
+                                    name: "fade-in-animation",
+                                    node: this.$.cardLoginErrorBar
+                                },
+                                {
+                                    name: "slide-down-animation",
+                                    node: this.$.cardLoginErrorBar
+                                }]
+                        }
+                    }
+                },
+
+                /**
+                 * The `url` of the login endpoint.
+                 */
+                url: String,
+
+                /**
+                 * The login name of the user.
+                 */
+                loginName: {
+                    type: String,
+                    observer: '_loginNameChanged'
+                },
+
+                /**
+                 * The last error message.
+                 */
+                lastError: String,
+
+                /**
+                 * Whether or not the control is in an error state.
+                 */
+                hasError: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Whether or not the control is busy waiting for a response.
+                 */
+                busy: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The elevation of the login box.
+                 */
+                elevation: {
+                    type: Number,
+                    value: 2,
+                    reflectToAttribute: true
+                },
+
+                /**
+                 * Whether or not the user is logged in.
+                 */
+                loggedIn: {
+                    type: Boolean,
+                    value: false,
+                    notify: true
+                },
+
+                /**
+                 * The label text for the login control.
+                 */
+                titleLabel: {
+                    type: String,
+                    value: "SmarterChat"
+                },
+
+                /**
+                 * The label text for the login name edit box.
+                 */
+                loginNameLabel: {
+                    type: String,
+                    value: "login name"
+                },
+
+                /**
+                 * The label text for the password edit box.
+                 */
+                passwordLabel: {
+                    type: String,
+                    value: "password"
+                },
+
+                /**
+                 * The label text for the submit button.
+                 */
+                submitButtonLabel: {
+                    type: String,
+                    value: "Submit"
+                },
+
+                /**
+                 * The label text that is displayed while the user is being logged in.
+                 */
+                busyLabel: {
+                    type: String,
+                    value: "Logging you in, please wait..."
+                }
+            },
+
+            // Element Lifecycle
+            ready: function () {
+
+                if (!this.loginName) {
+                    this.$.submitButton.disabled = true;
+                } else {
+                    this.$.submitButton.disabled = !(this.$.loginBox.validate());
+                }
+
+            },
+
+            // Element Behavior
+            /**
+             * Logs the user out.
+             */
+            logout: function () {
+                if (this.loggedIn) {
+                    this.fire('mg-logout', { user: this.loginName });
+                    this.loggedIn = false;
+                }
+            },
+
+            /**
+             * Called after a successful login.
+             */
+            _handleResponse: function () {
+                this._raiseLoginEvent(true);
+            },
+
+            /**
+             * Called after a failed login.
+             */
+            _handleError: function () {
+                this._raiseLoginEvent(false);
+            },
+
+            /**
+             * Called when the Submit button is clicked.
+             */
+            _onSubmitButtonClick: function () {
+
+                if (!this.$.submitButton.disabled) {
+                    this.lastError = "";
+                    this.hasError = false;
+                    this.busy = true;
+                    this.async(function () {
+                        this.$.loginAjax.body = JSON.stringify({ loginName: this.loginName, password: this.$.passwordBox.value });
+                        this.$.loginAjax.generateRequest();
+                    });
+                }
+            },
+
+            _loginNameChanged: function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    this.$.submitButton.disabled = !(this.$.loginBox.validate());
+                }
+
+                if (!newValue) {
+                    this.$.submitButton.disabled = true;
+                }
+            },
+
+            /**
+             * The `mg-login-success` event is fired whenever the login is successful.
+             *
+             * @event mg-login-success
+             * @detail {{result: Object}}
+             */
+
+            /**
+             * The `mg-login-fail` event is fired whenever the login fails.
+             *
+             * @event mg-login-fail
+             * @detail {{result: Object}}
+             */
+
+            /**
+             * Fires an event indicating that the login was successful or not, along with the relevant session or error information, respectively.
+             *
+             * @param {string} token A valid access token.
+             */
+            _raiseLoginEvent: function (success) {
+
+                if (success) {
+                    var successResponse = this.$.loginAjax.lastResponse;
+
+                    this.fire('mg-login-success', { result: successResponse });
+                    this.loggedIn = true;
+                } else {
+                    var errorResponse = {
+                        code: this.$.loginAjax.lastRequest.status,
+                        message: this.$.loginAjax.lastRequest.statusText
+                    }
+
+                    this.lastError = errorResponse.message;
+                    this.hasError = true;
+
+                    this.fire('mg-login-fail', { result: errorResponse });
+                    this.loggedIn = false;
+                }
+
+                if (this.hasError) {
+                    this.playAnimation("showError");
+                }
+
+                this.busy = false;
+                this.$.passwordBox.value = "";
+            }
+        });
+    </script>
+</dom-module>

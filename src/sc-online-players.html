@@ -1,0 +1,105 @@
+﻿<link rel="import" href="../bower_components/polymer/polymer.html">
+<!--<link rel="import" href="../css/reset.css">
+<link rel="import" href="../css/style.css">-->
+<script src="../bower_components/firebase/firebase.js"></script>
+<link rel="import" href="../bower_components/firebase-element/firebase.html">
+<link rel="import" href="../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../bower_components/paper-badge/paper-badge.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="sc-chat-item.html">
+<script src="../bower_components/firebase/firebase.js"></script>
+<link rel="import" href="../bower_components/firebase-element/firebase.html">
+<link rel="import" href="../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="sc-online-players">
+    <template>
+        <style>
+            :host {
+                display: block;
+                position: relative;
+                width: 100%;
+                border-bottom: 1px solid #e0e0e0;
+                font-size: 16px;
+                min-height: 72px;
+                z-index: 0;
+            }
+
+            .iron-selected {
+                background-color: var(--google-blue-500);
+                color: white;
+            }
+        </style>
+
+        <firebase-collection limit-to-last="10"
+                             location="https://helpdeskchat.firebaseio.com/assignedChats"
+                             data="{{assignedChats}}"></firebase-collection>
+
+        <iron-selector id="listSelection" attr-for-selected="playerName" on-tap="_itemSelected">
+            <template id="myList" is="dom-repeat" items="{{assignedChats}}">
+                <div name="[[item.playerName]]">
+                    <sc-chat-item avatar="[[item.playerAvatar]]" username="[[item.playerName]]" message="" status="[[playerIsOnline]]" timestamp=""></sc-chat-item>
+                </div>
+            </template>
+        </iron-selector>
+
+        <paper-dialog heading="Dialog" id='dialogID'>
+            testing 123
+        </paper-dialog>
+        <paper-button label="TransitionB"></paper-button>
+
+        <!--<iron-ajax auto
+                   url="https://jsonp.nodejitsu.com/"
+                   headers='{"Content-Type": "application/json;charset=utf-8"
+                              ,"Authorization": "bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vc3lzdGVtL29wZXJhdG9yc2VjdXJpdHkvdjEiLCJleHAiOjE0Njc3MTk0OTYsIm9wZXJhdG9yTmFtZSI6IlNvdXRoU2Vhc0dhbWluZyIsIm9wZXJhdG9yQXBwTmFtZSI6IkNhaW1hbiAtIFNvdXRoU2Vhc0dhbWluZyIsInBpZCI6WyI3MTgiLCI3MTkiLCI3MjAiLCI3MjEiLCI5ODEiLCIxMzM0IiwiMTM1NiIsIjE1NTUiLCIxNzMyIiwiMTc1NSIsIjE3NzYiLCIxNzg3IiwiMTc4OCIsIjE4NTkiLCIxODczIiwiMTkyNiIsIjE5NTUiLCIxOTU3IiwiMTk1OCIsIjE5NzEiLCIyMDEwIiwiMjA1MiIsIjIwNzkiLCIyMDk2IiwiMjIwNSIsIjMwMDUiLCIzMjc5IiwiNTAwMSIsIjUwMDIiLCI1MDAzIiwiNTAwNCIsIjUwMDUiLCI1MDA2IiwiNTAwNyIsIjUwMTAiLCI1MDExIiwiNTAxMiIsIjUwMTMiLCI1MDE0IiwiNTAxNSIsIjUwMTYiLCI1MDE3IiwiNTAxOCIsIjUwMTkiLCI1MDIwIiwiNTAyMSIsIjUwMjIiLCI1MDIzIiwiNTAyNCIsIjUwMjUiLCI1MDI2IiwiNTAyNyIsIjUwMjgiLCI1MDI5IiwiNTAzMCIsIjUwMzEiLCI1MDMyIiwiNTAzMyIsIjUwMzQiLCI1MDM1IiwiNTAzNiIsIjUwMzciLCI1MDM4IiwiNTAzOSIsIjUwNDAiLCI1MDQxIiwiNTA0MiIsIjUwNDMiLCI1MDQ0IiwiNTA0NSIsIjUwNDYiLCI1MDQ3IiwiNTA0OCIsIjUwNDkiLCI1MDUwIiwiNTA1MSIsIjUwNTIiLCI1MDUzIiwiNTA1NCIsIjUwNTUiLCI1MDU2IiwiNTA1NyIsIjUwNTgiLCI1MDU5IiwiNTA2MCIsIjUwNjEiLCI1MDYyIiwiNTA2MyIsIjUwNjQiLCI1MDY1IiwiNTA2NiIsIjUwNjciLCI1MDY4IiwiNTA2OSIsIjUwNzAiLCI1MDcxIiwiNTA3MiIsIjUwNzMiLCI1MDc0IiwiNTA3NSIsIjUwNzYiLCI1MDc3IiwiNTA3OCIsIjUwNzkiLCI1MDgwIiwiNTA4MSIsIjUwODIiLCI1MDgzIiwiNTA4NCIsIjUwODUiLCI1MDg2IiwiNTA4NyIsIjUwODgiLCI1MDg5IiwiNTA5MCIsIjUxMDAiLCI1MTAxIiwiNTEwMiIsIjUxMDQiLCI1MTA1IiwiNTEwNiIsIjUxMDciLCI1MTA4IiwiNTEwOSIsIjUxMTAiLCI1MTExIiwiNTExMiIsIjUxMTUiLCI1MTE2IiwiNTExNyIsIjUxMTgiLCI1MTIwIiwiNTEyMSIsIjUxMjIiLCI1MTIzIiwiNTEyNSIsIjUxMjYiLCI1MTI3IiwiNTEyOCIsIjUxMzAiLCI1MTMxIiwiNTEzMiIsIjUxMzMiLCI2MDAxIiwiNjAwMiIsIjYwMDMiLCI2MTE4IiwiNjEyOCIsIjcwMDEiLCI3MDAzIiwiNzAwNCIsIjcwMDUiLCI3MDA3IiwiNzAwOSJdLCJzdWIiOiItNSIsImNlcnQiOiJNR1MuT3BlcmF0b3JUb2tlbi5CbHVlbWVzYS4yMDE1MDQyMCIsImlhdCI6IjE0Njc3MTc2OTYiLCJhdWQiOiJPcGVyYXRvciJ9.I-6cFLiOXv4gIeLOxLOuS4GTBS8LMx_HkKtDrOUIpxG7P4KyhCWiZv4xs5G27sAnMWezV41ja40yO-if-pFyteLaG2PHyPll4x4NfKxkT2ZgTmCb-t61e8bxqi7SyhOyZx3JXbRjD79l9No9yyAlfRDlINbYy1p_H49BRnQyfE4"}'
+                   handle-as="json"
+                   method='GET'
+                   verbose
+                   last-response="{{ajaxResponse}}"
+                   params='{"url":"//http://webserver4:80/Account/v1/accounts/product/5100/user/32234"}'
+                   debounce-duration="300"></iron-ajax>
+
+        <div>Player Name:<span>{{ajaxResponse}}</span></div>-->
+
+    </template>
+    <script>
+
+        Polymer({
+
+            is: 'sc-online-players',
+
+            properties:
+                {
+                    assignedChats: {
+                        reflectToAttribute: true,
+                        notify: true
+                    },
+                    selectedchat: {
+                        notify: true
+                    },
+                    selectedurl: {
+                        type: String,
+                        reflectToAttribute: true,
+                        notify: true
+                    }
+
+                },
+
+            _itemSelected: function(e,detail)
+            {
+                this.selectedchat = this.$.myList.itemForElement(e.target);
+                this.selectedurl = 'https://helpdeskchat.firebaseio.com/assignedChats/' + this.selectedchat.__firebaseKey__;
+            }
+
+      
+        });
+
+    </script>
+</dom-module>

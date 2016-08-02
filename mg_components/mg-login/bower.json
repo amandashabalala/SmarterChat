@@ -1,0 +1,42 @@
+{
+  "name": "mg-login",
+  "version": "1.2.0",
+  "description": "Used to authenticate with Caiman, allowing you to interact with other Caiman APIs via a Caiman access token.",
+  "private": true,
+  "authors": [
+    "Microgaming"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer"
+  ],
+  "main": "mg-login.html",
+  "repository": {
+    "type": "git",
+    "url": "digit.mgsops.net:MgElements/mg-login.git"
+  },
+  "license": "",
+  "homepage": "",
+  "ignore": [],
+  "dependencies": {
+    "promise-polyfill": "polymerlabs/promise-polyfill",
+    "polymer": "Polymer/polymer",
+    "iron-ajax" : "polymerelements/iron-ajax",
+    "iron-a11y-keys" : "polymerelements/iron-a11y-keys",
+    "paper-material" : "polymerelements/paper-material",
+    "paper-spinner" : "polymerelements/paper-spinner",
+    "paper-button" : "polymerelements/paper-button",
+    "paper-input" : "polymerelements/paper-input",
+    "gold-email-input" : "polymerelements/gold-email-input",
+    "neon-animation" : "polymerelements/neon-animation"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page",
+    "iron-image": "polymerelements/iron-image",
+    "paper-styles": "polymerelements/paper-styles",
+    "test-fixture": "polymerelements/test-fixture",
+    "web-component-tester": "^4.0.0",
+	"webcomponentsjs": "webcomponents/webcomponentsjs",
+    "mg-test-utils" : "git@digit.mgsops.net:MgElements/mg-test-utils.git"
+  }
+}

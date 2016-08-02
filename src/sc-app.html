@@ -1,0 +1,166 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<script src="../bower_components/firebase/firebase.js"></script>
+<link rel="import" href="../bower_components/firebase-element/firebase.html">
+<link rel="import" href="../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="../mg_components/mg-login/mg-login.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+
+<link rel="import" href="my-icons.html">
+<link rel="import" href="sc-online-players.html">
+<link rel="import" href="sc-active-chat.html">
+<link rel="import" href="sc-login.html">
+
+<dom-module id="sc-app">
+    <template>
+        <style>
+            :host {
+                display: block;
+                --app-primary-color: #4285f4;
+                --app-secondary-color: black;
+                /*--app-drawer-width::25%;*/
+            }
+
+            app-header {
+                background-color: var(--app-primary-color);
+                color: #fff;
+            }
+
+                app-header paper-icon-button {
+                    --paper-icon-button-ink-color: white;
+                }
+
+            .drawer-list {
+                margin: 0 20px;
+            }
+
+                .drawer-list a {
+                    display: block;
+                    padding: 0 16px;
+                    line-height: 40px;
+                    text-decoration: none;
+                    color: var(--app-secondary-color);
+                }
+
+                    .drawer-list a.iron-selected {
+                        color: black;
+                        font-weight: bold;
+                    }
+
+                    .drawer-list a.subroute {
+                        padding-left: 32px;
+                    }
+
+            .drawer-toolbar {
+                color: #919191;
+                font-size: 0.75em;
+            }
+        </style>
+        <app-location route="{{route}}"></app-location>
+        <app-route route="{{route}}"
+                   pattern="/:page"
+                   data="{{routeData}}"
+                   tail="{{subroute}}"></app-route>
+
+
+        <app-drawer-layout fullbleed>
+            <!-- Left drawer content -->
+            <app-drawer class="drawer-layout" opened>
+                <app-toolbar class="drawer-toolbar">Online Now</app-toolbar>
+
+                <sc-online-players selectedchat="{{selectedchat}}" selectedUrl="{{selectedurl}}"></sc-online-players>
+            </app-drawer>
+
+            <!-- Main content -->
+            <app-header-layout has-scrolling-region>
+                <app-header condenses reveals effects="waterfall">
+                    <app-toolbar>
+                        <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                        <iron-icon class="big" src="../../images/chaticon2.png"></iron-icon>
+                        <div title>SmarterChat</div>
+                        <paper-button label="show up" id="ppb1"></paper-button>
+                    </app-toolbar>
+                </app-header>
+                <sc-active-chat selectedchat="{{selectedchat}}" selectedUrl="{{selectedurl}}" items="{{selectedchat.chatThread}}"></sc-active-chat>
+            </app-header-layout>
+
+        </app-drawer-layout>
+
+        <paper-dialog id="loginDialog" entry-animation="scale-up-animation"
+              exit-animation="fade-out-animation" modal="true">
+            <sc-login loggedinuser="{{loggedinuser}}"></sc-login>
+        </paper-dialog>
+        <!--<h3>{{loggedinuser}}</h3>-->
+    </template>
+    <script>
+
+        Polymer({
+
+            is: 'sc-app',
+
+            properties: {
+
+                page: {
+                    type: String,
+                    reflectToAttribute: true,
+                    observer: '_pageChanged'
+                },
+
+                selectedchat: {
+                    type: Object,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                selectedurl: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                loggedinuser: {
+                    type: Object,
+                    observer: '_userLoggedIn'
+                }
+
+            },
+
+            attached: function() {
+                this.$.loginDialog.toggle();
+            },
+
+            observers: [
+              '_routePageChanged(routeData.page),_userLoggedIn()'
+            ],
+
+            _routePageChanged: function (page) {
+                this.page = page || 'app';
+            },
+
+            _pageChanged: function (page) {
+                // load page import on demand.
+                this.importHref(
+                  this.resolveUrl('sc-' + page + '.html'), null, null, true);
+            },
+            _userLoggedIn: function () {
+                //toggle dialog
+                this.$.loginDialog.toggle();
+            }
+
+        });
+
+
+    </script>
+</dom-module>

@@ -1,0 +1,122 @@
+﻿<link rel="import" href="../bower_components/polymer/polymer.html">
+<script src="../bower_components/firebase/firebase.js"></script>
+<link rel="import" href="../bower_components/firebase-element/firebase.html">
+<link rel="import" href="../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="sc-chat-item.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+
+
+<dom-module id="sc-active-chat">
+    <template>
+        <style>
+            :host {
+                @apply(--layout-vertical);
+                display: block;
+                position: relative;
+                width: 100%;
+                /*border-bottom: 1px solid #e0e0e0;*/
+                font-size: 16px;
+                min-height: 100px;
+                z-index: 0;
+                --accent-color: #CDDC39;
+                --default-primary-color:#4285f4;
+            }
+
+            paper-input {
+                @apply(--layout-flex) padding: 10px;
+            }
+
+            .list {
+                @apply(--layout-flex);
+                overflow: auto;
+            }
+
+            .send-message {
+                @apply(--layout-horizontal);
+                padding: 0 16px 6px 16px;
+                bottom:200px;
+            }
+
+            .chatitems{
+                position: relative;
+            }
+        </style>
+        <!--location="https://helpdeskchat.firebaseio.com/assignedChats/1"-->
+        <firebase-collection id="fbCol" limit-to-last="10"
+                             location="{{selectedurl}}"
+                             data="{{selectedchat}}"></firebase-collection>
+        <div class="chatitems">
+            <div class="list">
+                <template id="chatThread" is="dom-repeat" items="{{selectedchat.chatThread}}">
+                    <sc-chat-item avatar="[[item.avatar]]"
+                                  username="[[selectedchat.sender]]"
+                                  message="[[item.messageText]]"
+                                  status="[[selectedchat.playerIsOnline]]"
+                                  timestamp="[[item.dateTime]]"></sc-chat-item>
+                </template>
+            </div>
+
+            <div class="send-message">
+                <paper-input label="New Message:" on-keyup="_sendMessage"></paper-input>
+                <paper-fab icon="send" id="sendButton" on-tap="_sendMessage"></paper-fab>
+            </div>
+        </div>
+    </template>
+    <script>
+
+        Polymer({
+
+            is: 'sc-active-chat',
+
+            properties: {
+                selectedchat: {
+                    type: Object,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                selectedurl: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                chatitems:{
+                    type: Array,
+                    notify: true
+                }
+            },
+
+            _sendMessage: function (e) {
+                if (e.keyCode == 13) {
+
+                    var date = new Date();
+                    var newKey = this.$.chatThread.items.length;
+                    var ref = new Firebase(this.$.fbCol.location + "/chatThread/" + newKey);
+                    //var newPostRef = ref.push();
+                    //var postID = newPostRef.key();
+
+                    ref.set({
+                        dateTime: date.toUTCString(),
+                        messageText: e.target.value,
+                        avatar: "../../images/../../images/scottishfold.jpg",
+                        sender: "OpUser1"
+                    });
+
+                    var newref = new Firebase(this.$.fbCol.location);
+
+                    //newref.update(JSON.stringify(this.$.fbCol.location.data), JSON.stringify(this.$.fbCol.location.data))
+
+                    e.target.value = '';
+                    this.$.fbCol.location = this.$.fbCol.location;
+                    
+                }
+            }
+
+        });
+
+    </script>
+</dom-module>

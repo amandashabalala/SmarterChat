@@ -1,0 +1,173 @@
+﻿<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/time-elements/time-elements.js">
+
+
+<dom-module id="sc-chat-item">
+    <template>
+        <style>
+            :host {
+                display: block;
+                position: relative;
+                width: 100%;
+                /*border-bottom: 1px solid #e0e0e0;*/
+                font-size: 16px;
+                min-height: 72px;
+                z-index: 0;
+            }
+
+            .user-list {
+                padding: 16px;
+            }
+
+            .avatar {
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                margin: 0 16px 0 0;
+                background: #9e9e9e url(lion.png) center center no-repeat;
+                background-size: contain;
+                position: relative;
+            }
+
+            .status {
+                position: absolute;
+                bottom: -3px;
+                right: -3px;
+                border-radius: 50%;
+                width: 14px;
+                height: 14px;
+                background-color: #7EDF25;
+                display: none;
+            }
+
+                .status.online {
+                    display: block;
+                }
+
+            .username {
+                text-transform: capitalize;
+                font-weight: 500;
+                color: #919191;
+                line-height: 1.3em;
+                max-width: 90%;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                white-space: nowrap;
+            }
+
+            .timestamp {
+                font-size: 0.75em;
+                color: #919191;
+            }
+
+            .avatar {
+                border: solid 3px silver;
+                /*background-image: url(../../images/../../images/bengal.jpg)*/
+            }
+
+                .avatar.navy {
+                    border-color: #393b79;
+                }
+
+                .avatar.slate {
+                    border-color: #6b6ecf;
+                }
+
+                .avatar.olive {
+                    border-color: #637939;
+                }
+
+                .avatar.moss {
+                    border-color: #b5cf6b;
+                }
+
+                .avatar.chocolate {
+                    border-color: #8c6d31;
+                }
+
+                .avatar.buttercup {
+                    border-color: #e7ba52;
+                }
+
+                .avatar.maroon {
+                    border-color: #843c39;
+                }
+
+                .avatar.cerise {
+                    border-color: #d6616b;
+                }
+
+                .avatar.plum {
+                    border-color: #7b4173;
+                }
+
+                .avatar.orchid {
+                    border-color: #ce6dbd;
+                }
+          
+        </style>
+
+        <section class="user-list" layout horizontal>
+            <div class$="avatar {{color}}" style$="background-image: url({{avatar}})">
+                <div class$="status {{status}}"></div>
+            </div>
+            <div>
+                <div class="username">{{username}}</div>
+                <div class="text">{{message}}</div>
+                <div class="timestamp">{{timestamp}}</div>
+            </div>
+            <!--<time class$="timestamp" is="relative-time" datetime$="{{timestamp}}"></time>-->
+        </section>
+
+    </template>
+    <script>
+
+        Polymer({
+
+            is: 'sc-chat-item',
+
+            properties: {
+                avatar: {
+                    type: String,
+                    reflectToAttribute: true,
+                    value: '',
+                    notify: true
+                },
+
+                color: {                    
+                    type: String,
+                    reflectToAttribute: true,
+                    value: '',
+                    notify: true
+                },
+
+                username: {                    
+                    type: String,
+                    reflectToAttribute: true,
+                    value: '',
+                    notify: true
+                },
+
+                message: {                    
+                    type: String,
+                    reflectToAttribute: true,
+                    value: '',
+                    notify: true
+                },
+                status: {
+                    type: String,
+                    reflectToAttribute: true,
+                    value: '',
+                    notify: true
+                },
+                timestamp: {
+                    type: Date,
+                    reflectToAttribute: true,
+                    notify: true,
+                    value: new Date().toISOString()}
+            }
+
+        });
+
+    </script>
+</dom-module>
